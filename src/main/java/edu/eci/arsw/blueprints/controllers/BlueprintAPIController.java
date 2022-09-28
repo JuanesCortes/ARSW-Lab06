@@ -35,57 +35,47 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "/blueprints")
 public class BlueprintAPIController {
-    
+
     @Autowired
     BlueprintsServices bPServices;
-    
+
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<?> getBlueprints() {
-        Set<Blueprint> blueprintSet;
-        String jsonString = "";
+
         try {
-            blueprintSet = bPServices.getAllBlueprints();
-            jsonString = crearJsonString(blueprintSet);
+            return new ResponseEntity<>(bPServices.getAllBlueprints(), HttpStatus.ACCEPTED);
         } catch (BlueprintNotFoundException ex) {
             Logger.getLogger(BlueprintAPIController.class.getName()).log(Level.SEVERE, null, ex);
-            return new ResponseEntity<>("Error al consultar blueprints",HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Error al consultar blueprints", HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(new Gson().toJson(jsonString), HttpStatus.ACCEPTED);
     }
-    
+
     @RequestMapping(method = RequestMethod.GET, value = "/{author}")
     public ResponseEntity<?> getBlueprintsByAuthor(@PathVariable String author) {
-        Set<Blueprint> blueprintSet;
-        String jsString = "";
         try {
-            blueprintSet = bPServices.getBlueprintsByAuthor(author);
-            jsString = crearJsonString(blueprintSet);
+            return new ResponseEntity<>(bPServices.getBlueprintsByAuthor(author), HttpStatus.ACCEPTED);
         } catch (BlueprintNotFoundException ex) {
             Logger.getLogger(BlueprintAPIController.class.getName()).log(Level.SEVERE, null, ex);
-            return new ResponseEntity<>("Error al consultar blueprints por autor",HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Error al consultar blueprints por autor", HttpStatus.NOT_FOUND);
         }
-        
-        return new ResponseEntity<>(new Gson().toJson(jsString), HttpStatus.ACCEPTED);
+
     }
+
     @RequestMapping(method = RequestMethod.GET, value = "/{author}/{bpname}")
-    public ResponseEntity<?> getBlueprint (@PathVariable String author, @PathVariable String bpname){
-        Set<Blueprint> blueprintSet = new HashSet<Blueprint>();
-        String jsString = "";
+    public ResponseEntity<?> getBlueprint(@PathVariable String author, @PathVariable String bpname) {
+
         try {
-            blueprintSet.add(bPServices.getBlueprint(author,bpname));
-            jsString = crearJsonString(blueprintSet);
+            return new ResponseEntity<>(bPServices.getBlueprint(author, bpname), HttpStatus.ACCEPTED);
         } catch (BlueprintNotFoundException ex) {
             Logger.getLogger(BlueprintAPIController.class.getName()).log(Level.SEVERE, null, ex);
-            return new ResponseEntity<>("Error al consultar blueprint",HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Error al consultar blueprint", HttpStatus.NOT_FOUND);
         }
-        
-        return new ResponseEntity<>(new Gson().toJson(jsString), HttpStatus.ACCEPTED);
     }
-    
-    @RequestMapping(method = RequestMethod.POST, consumes = "application/json" ,value = "/planos")	
-    public ResponseEntity<?> getBlueprintPost(@RequestBody JSONObject blueprintJson){
-    try {
-        Blueprint blueprint = new Blueprint(blueprintJson.get("Author").toString(), blueprintJson.get("Name").toString());
+
+    @RequestMapping(method = RequestMethod.POST, consumes = "application/json", value = "/planos")
+    public ResponseEntity<?> getBlueprintPost(@RequestBody JSONObject blueprintJson) {
+        try {
+            Blueprint blueprint = new Blueprint(blueprintJson.get("Author").toString(), blueprintJson.get("Name").toString());
             String[] listPoints = blueprintJson.get("Points").toString().split("-");
             for (String pointStr : listPoints) {
                 List<String> point = Arrays.asList(pointStr.split(","));
@@ -96,14 +86,14 @@ public class BlueprintAPIController {
             }
 
             bPServices.addNewBlueprint(blueprint);
-            
-    } catch (BlueprintPersistenceException ex) {
-        Logger.getLogger(BlueprintAPIController.class.getName()).log(Level.SEVERE, null, ex);
-        return new ResponseEntity<>("Error al ingresar blueprint con post",HttpStatus.FORBIDDEN);            
+
+        } catch (BlueprintPersistenceException ex) {
+            Logger.getLogger(BlueprintAPIController.class.getName()).log(Level.SEVERE, null, ex);
+            return new ResponseEntity<>("Error al ingresar blueprint con post", HttpStatus.FORBIDDEN);
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED.getReasonPhrase(), HttpStatus.CREATED);
     }
-    return new ResponseEntity<>(HttpStatus.CREATED.getReasonPhrase(), HttpStatus.CREATED);
-}
-    
+
     @RequestMapping(method = RequestMethod.PUT, value = "/{author}/{bpname}")
     public ResponseEntity<?> putBlueprintsByAuthor(@PathVariable String author, @PathVariable String bpname, @RequestBody JSONObject blueprintJson) {
         Blueprint blueprint;
@@ -127,23 +117,23 @@ public class BlueprintAPIController {
             jsonString = crearJsonString(blueprintSet);
         } catch (BlueprintNotFoundException ex) {
             Logger.getLogger(BlueprintAPIController.class.getName()).log(Level.SEVERE, null, ex);
-            return new ResponseEntity<>("Error al editar blueprint con put",HttpStatus.FORBIDDEN); 
+            return new ResponseEntity<>("Error al editar blueprint con put", HttpStatus.FORBIDDEN);
         }
         return new ResponseEntity<>(new Gson().toJson(jsonString), HttpStatus.CREATED);
     }
-    
-    
+
     private String crearJsonString(Set<Blueprint> blueprints) {
         List<Blueprint> blueprintList = new ArrayList<>(blueprints);
-        String blueprintsString = "{\"blueprints\" : ";
+        String blueprintsString = "[";
 
-        for (Blueprint blueprint:blueprintList) {
+        for (Blueprint blueprint : blueprintList) {
             String author = blueprint.getAuthor();
             String name = blueprint.getName();
             String points = blueprint.getPointsString();
-            blueprintsString += "{\"Author\": \"" + author + "\", \"Name\": \"" + name + "\", \"Points\": \"" + points + "\"}";
+            blueprintsString += "{\"author\": \"" + author + "\", \"name\": \"" + name + "\", \"points\": \"" + points + "\"},";
         }
-        blueprintsString += "}";
+        blueprintsString = blueprintsString.substring(0, blueprintsString.length() - 1);
+        blueprintsString += "]";
         return blueprintsString;
     }
 }

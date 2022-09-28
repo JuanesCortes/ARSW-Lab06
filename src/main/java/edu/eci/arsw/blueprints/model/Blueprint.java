@@ -99,17 +99,18 @@ public class Blueprint {
     }
     
     public String getPointsString() {
-        String resultados = "";
+        String resultados = "[";
         int cont = points.size();
         for (int i = 0; i < points.size(); i++) {
             int posX = points.get(i).getX();
             int posY = points.get(i).getY();
             if (i == (points.size() - 1)) {
-                resultados += ("("+posX+", "+posY+")"+"");
+                resultados += "{\"x\":"+posX+",\"y\":"+posY+"}"+"";
             } else {
-                resultados += ("("+posX+", "+posY+")"+" - ");
+                resultados += "{\"x\":"+posX+", \"y\":"+posY+"}"+",";
             }
         }
+        resultados += "]";
         return resultados;
     }
     

@@ -1,3 +1,5 @@
+/* global apiclient */
+
 var modulo = (function () {
     
     /**
@@ -9,7 +11,7 @@ var modulo = (function () {
         if (author === "") {
             alert("Nombre de Autor Vacio");
         } else {
-            apimock.getBlueprintsByAuthor(author, (req, resp) => {
+            apiclient.getBlueprintsByAuthor(author, (req, resp) => {
                 llenarTabla(resp);
             });
         }
@@ -22,7 +24,7 @@ var modulo = (function () {
     var getBlueprintsByNameAndAuthor = function(data){
         author = $("#author").val();
         blueprintName = data.id;
-        apimock.getBlueprintsByNameAndAuthor(author, blueprintName, (req, resp) => {
+        apiclient.getBlueprintsByNameAndAuthor(author, blueprintName, (req, resp) => {
             draw(resp);
         });
     };
